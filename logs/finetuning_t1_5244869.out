@@ -1,0 +1,131 @@
+Running test script on host mcml-hgx-a100-015
+Wed Jul 23 12:18:38 AM CEST 2025
+Error: Oh My Zsh can't be loaded from: slurm_script. You need to run zsh instead.
+Here's the process tree:
+
+   PPID     PID COMMAND
+      1 1789665 slurmstepd: [5244869.batch]
+1789665 1789669  \_ /bin/bash /var/lib/slurm-llnl/slurmd/job5244869/slurm_script
+
+WARNING:root:Reusing already computed split file which was split using the simple_train_val_split method and parameter 0.2.
+/dss/dsshome1/04/ra58seq2/miniforge3/envs/codebase/lib/python3.10/site-packages/lightning/fabric/utilities/seed.py:42: No seed found, seed set to 0
+[rank: 0] Seed set to 0
+INFO:root:Starting model training 
+log file:            /dss/dsshome1/04/ra58seq2/unet/finetuned/t1/Task001_FOMO1/unet_xl/version_0/training_log.txt 
+
+INFO:root:Using 8 workers
+INFO:root:Using dataset class: <class 'data.dataset.FOMODataset'> for train/val and <class 'yucca.modules.data.datasets.YuccaDataset.YuccaTestDataset'> for inference
+Using bfloat16 Automatic Mixed Precision (AMP)
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+HPU available: False, using: 0 HPUs
+WARNING:root:Succesfully transferred weights for 39/42 layers
+WARNING:root:Rejected the following keys:
+Not in old dict: [].
+Wrong shape: [].
+Post check not succesful: ['model.encoder.in_conv.conv1.conv.weight', 'model.decoder.fc.weight', 'model.decoder.fc.bias'].
+/dss/dsshome1/04/ra58seq2/miniforge3/envs/codebase/lib/python3.10/site-packages/lightning/pytorch/trainer/connectors/checkpoint_connector.py:190: .fit(ckpt_path="last") is set, but there is no last checkpoint available. No checkpoint will be loaded. HINT: Set `ModelCheckpoint(..., save_last=True)`.
+You are using a CUDA device ('NVIDIA A100-SXM4-80GB') that has Tensor Cores. To properly utilize them, you should set `torch.set_float32_matmul_precision('medium' | 'high')` which will trade-off precision for performance. For more details, read https://pytorch.org/docs/stable/generated/torch.set_float32_matmul_precision.html#torch.set_float32_matmul_precision
+wandb: Currently logged in as: daniel-gloukhman (daniel-gloukhman-ludwig-maximilianuniversity-of-munich) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.20.1
+wandb: Run data is saved locally in ./wandb/run-20250723_001848-gzmc5znx
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run finetune_unet_xl_experiment_1_version_0
+wandb: ⭐️ View project at https://wandb.ai/daniel-gloukhman-ludwig-maximilianuniversity-of-munich/fomo-finetuning
+wandb: 🚀 View run at https://wandb.ai/daniel-gloukhman-ludwig-maximilianuniversity-of-munich/fomo-finetuning/runs/gzmc5znx
+INFO:root:Setting up data for stage: fit
+INFO:root:Training on samples: ['/dss/dssmcmlfs01/pr74ze/pr74ze-dss-0001/ra58seq2/finetunig/t1/data/preprocessed/Task001_FOMO1/FOMO1_sub_18', '/dss/dssmcmlfs01/pr74ze/pr74ze-dss-0001/ra58seq2/finetunig/t1/data/preprocessed/Task001_FOMO1/FOMO1_sub_20', '/dss/dssmcmlfs01/pr74ze/pr74ze-dss-0001/ra58seq2/finetunig/t1/data/preprocessed/Task001_FOMO1/FOMO1_sub_5', '/dss/dssmcmlfs01/pr74ze/pr74ze-dss-0001/ra58seq2/finetunig/t1/data/preprocessed/Task001_FOMO1/FOMO1_sub_8', '/dss/dssmcmlfs01/pr74ze/pr74ze-dss-0001/ra58seq2/finetunig/t1/data/preprocessed/Task001_FOMO1/FOMO1_sub_9', '/dss/dssmcmlfs01/pr74ze/pr74ze-dss-0001/ra58seq2/finetunig/t1/data/preprocessed/Task001_FOMO1/FOMO1_sub_19', '/dss/dssmcmlfs01/pr74ze/pr74ze-dss-0001/ra58seq2/finetunig/t1/data/preprocessed/Task001_FOMO1/FOMO1_sub_21', '/dss/dssmcmlfs01/pr74ze/pr74ze-dss-0001/ra58seq2/finetunig/t1/data/preprocessed/Task001_FOMO1/FOMO1_sub_4', '/dss/dssmcmlfs01/pr74ze/pr74ze-dss-0001/ra58seq2/finetunig/t1/data/preprocessed/Task001_FOMO1/FOMO1_sub_17', '/dss/dssmcmlfs01/pr74ze/pr74ze-dss-0001/ra58seq2/finetunig/t1/data/preprocessed/Task001_FOMO1/FOMO1_sub_3', '/dss/dssmcmlfs01/pr74ze/pr74ze-dss-0001/ra58seq2/finetunig/t1/data/preprocessed/Task001_FOMO1/FOMO1_sub_16', '/dss/dssmcmlfs01/pr74ze/pr74ze-dss-0001/ra58seq2/finetunig/t1/data/preprocessed/Task001_FOMO1/FOMO1_sub_11', '/dss/dssmcmlfs01/pr74ze/pr74ze-dss-0001/ra58seq2/finetunig/t1/data/preprocessed/Task001_FOMO1/FOMO1_sub_6', '/dss/dssmcmlfs01/pr74ze/pr74ze-dss-0001/ra58seq2/finetunig/t1/data/preprocessed/Task001_FOMO1/FOMO1_sub_13', '/dss/dssmcmlfs01/pr74ze/pr74ze-dss-0001/ra58seq2/finetunig/t1/data/preprocessed/Task001_FOMO1/FOMO1_sub_1', '/dss/dssmcmlfs01/pr74ze/pr74ze-dss-0001/ra58seq2/finetunig/t1/data/preprocessed/Task001_FOMO1/FOMO1_sub_2']
+INFO:root:Validating on samples: ['/dss/dssmcmlfs01/pr74ze/pr74ze-dss-0001/ra58seq2/finetunig/t1/data/preprocessed/Task001_FOMO1/FOMO1_sub_7', '/dss/dssmcmlfs01/pr74ze/pr74ze-dss-0001/ra58seq2/finetunig/t1/data/preprocessed/Task001_FOMO1/FOMO1_sub_15', '/dss/dssmcmlfs01/pr74ze/pr74ze-dss-0001/ra58seq2/finetunig/t1/data/preprocessed/Task001_FOMO1/FOMO1_sub_14', '/dss/dssmcmlfs01/pr74ze/pr74ze-dss-0001/ra58seq2/finetunig/t1/data/preprocessed/Task001_FOMO1/FOMO1_sub_10', '/dss/dssmcmlfs01/pr74ze/pr74ze-dss-0001/ra58seq2/finetunig/t1/data/preprocessed/Task001_FOMO1/FOMO1_sub_12']
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+  | Name          | Type             | Params | Mode 
+-----------------------------------------------------------
+0 | train_metrics | MetricCollection | 0      | train
+1 | val_metrics   | MetricCollection | 0      | train
+2 | model         | UNet             | 56.5 M | train
+3 | loss_fn_train | CrossEntropyLoss | 0      | train
+-----------------------------------------------------------
+56.5 M    Trainable params
+0         Non-trainable params
+56.5 M    Total params
+226.134   Total estimated model params size (MB)
+65        Modules in train mode
+0         Modules in eval mode
+SLURM auto-requeueing enabled. Setting signal handlers.
+Using num_workers: 8, num_devices: 1
+Task type: classification
+ARGS: Namespace(data_dir='/dss/dssmcmlfs01/pr74ze/pr74ze-dss-0001/ra58seq2/finetunig/t1/data/preprocessed', save_dir='/dss/dsshome1/04/ra58seq2/unet/finetuned/t1', pretrained_weights_path='/dss/dsshome1/04/ra58seq2/unet/models/FOMO60k/unet_xl_lw_dec/versions/version_0/epoch=99.ckpt', model_name='unet_xl', precision='bf16-mixed', patch_size=96, learning_rate=0.0001, compile=False, compile_mode=None, num_devices=1, num_workers=8, fast_dev_run=False, new_version=False, augmentation_preset='basic', epochs=500, batch_size=4, train_batches_per_epoch=100, taskid=1, split_method='simple_train_val_split', split_param=0.2, split_idx=0, experiment='experiment')
+Composing Transforms
+Train dataset:  ['FOMO1_sub_18', 'FOMO1_sub_20', 'FOMO1_sub_5', 'FOMO1_sub_8', 'FOMO1_sub_9', 'FOMO1_sub_19', 'FOMO1_sub_21', 'FOMO1_sub_4', 'FOMO1_sub_17', 'FOMO1_sub_3', 'FOMO1_sub_16', 'FOMO1_sub_11', 'FOMO1_sub_6', 'FOMO1_sub_13', 'FOMO1_sub_1', 'FOMO1_sub_2']
+Val dataset:  ['FOMO1_sub_7', 'FOMO1_sub_15', 'FOMO1_sub_14', 'FOMO1_sub_10', 'FOMO1_sub_12']
+Run type:  finetune
+Starting training with 50000 max iterations over 500 epochs with train dataset of size 16 datapoints and val dataset of size 5 and effective batch size of 4
+Loading Model: 3D unet_xl
+Found model class:  <function unet_xl at 0x7f0c9c986e60>
+MODALITIES 4
+Transferring weights for finetuning
+Checkpoint path: None
+Loading from PyTorch Lightning checkpoint
+Traceback (most recent call last):
+  File "/dss/dsshome1/04/ra58seq2/lmu2025-miccai-fomo25/src/finetune.py", line 347, in <module>
+    main()
+  File "/dss/dsshome1/04/ra58seq2/lmu2025-miccai-fomo25/src/finetune.py", line 342, in main
+    trainer.fit(model=model, datamodule=data_module, ckpt_path="last")
+  File "/dss/dsshome1/04/ra58seq2/miniforge3/envs/codebase/lib/python3.10/site-packages/lightning/pytorch/trainer/trainer.py", line 561, in fit
+    call._call_and_handle_interrupt(
+  File "/dss/dsshome1/04/ra58seq2/miniforge3/envs/codebase/lib/python3.10/site-packages/lightning/pytorch/trainer/call.py", line 48, in _call_and_handle_interrupt
+    return trainer_fn(*args, **kwargs)
+  File "/dss/dsshome1/04/ra58seq2/miniforge3/envs/codebase/lib/python3.10/site-packages/lightning/pytorch/trainer/trainer.py", line 599, in _fit_impl
+    self._run(model, ckpt_path=ckpt_path)
+  File "/dss/dsshome1/04/ra58seq2/miniforge3/envs/codebase/lib/python3.10/site-packages/lightning/pytorch/trainer/trainer.py", line 1012, in _run
+    results = self._run_stage()
+  File "/dss/dsshome1/04/ra58seq2/miniforge3/envs/codebase/lib/python3.10/site-packages/lightning/pytorch/trainer/trainer.py", line 1054, in _run_stage
+    self._run_sanity_check()
+  File "/dss/dsshome1/04/ra58seq2/miniforge3/envs/codebase/lib/python3.10/site-packages/lightning/pytorch/trainer/trainer.py", line 1083, in _run_sanity_check
+    val_loop.run()
+  File "/dss/dsshome1/04/ra58seq2/miniforge3/envs/codebase/lib/python3.10/site-packages/lightning/pytorch/loops/utilities.py", line 179, in _decorator
+    return loop_run(self, *args, **kwargs)
+  File "/dss/dsshome1/04/ra58seq2/miniforge3/envs/codebase/lib/python3.10/site-packages/lightning/pytorch/loops/evaluation_loop.py", line 145, in run
+    self._evaluation_step(batch, batch_idx, dataloader_idx, dataloader_iter)
+  File "/dss/dsshome1/04/ra58seq2/miniforge3/envs/codebase/lib/python3.10/site-packages/lightning/pytorch/loops/evaluation_loop.py", line 437, in _evaluation_step
+    output = call._call_strategy_hook(trainer, hook_name, *step_args)
+  File "/dss/dsshome1/04/ra58seq2/miniforge3/envs/codebase/lib/python3.10/site-packages/lightning/pytorch/trainer/call.py", line 328, in _call_strategy_hook
+    output = fn(*args, **kwargs)
+  File "/dss/dsshome1/04/ra58seq2/miniforge3/envs/codebase/lib/python3.10/site-packages/lightning/pytorch/strategies/strategy.py", line 412, in validation_step
+    return self.lightning_module.validation_step(*args, **kwargs)
+  File "/dss/dsshome1/04/ra58seq2/lmu2025-miccai-fomo25/src/models/supervised_base.py", line 192, in validation_step
+    assert input_channels == self.num_modalities, (
+AssertionError: Expected 4 input channels, but got 3. This often happens when the task config has changed _after_ data has been preprocessed. Check your data preprocessing.
+Traceback (most recent call last):
+  File "/dss/dsshome1/04/ra58seq2/lmu2025-miccai-fomo25/src/finetune.py", line 347, in <module>
+    main()
+  File "/dss/dsshome1/04/ra58seq2/lmu2025-miccai-fomo25/src/finetune.py", line 342, in main
+    trainer.fit(model=model, datamodule=data_module, ckpt_path="last")
+  File "/dss/dsshome1/04/ra58seq2/miniforge3/envs/codebase/lib/python3.10/site-packages/lightning/pytorch/trainer/trainer.py", line 561, in fit
+    call._call_and_handle_interrupt(
+  File "/dss/dsshome1/04/ra58seq2/miniforge3/envs/codebase/lib/python3.10/site-packages/lightning/pytorch/trainer/call.py", line 48, in _call_and_handle_interrupt
+    return trainer_fn(*args, **kwargs)
+  File "/dss/dsshome1/04/ra58seq2/miniforge3/envs/codebase/lib/python3.10/site-packages/lightning/pytorch/trainer/trainer.py", line 599, in _fit_impl
+    self._run(model, ckpt_path=ckpt_path)
+  File "/dss/dsshome1/04/ra58seq2/miniforge3/envs/codebase/lib/python3.10/site-packages/lightning/pytorch/trainer/trainer.py", line 1012, in _run
+    results = self._run_stage()
+  File "/dss/dsshome1/04/ra58seq2/miniforge3/envs/codebase/lib/python3.10/site-packages/lightning/pytorch/trainer/trainer.py", line 1054, in _run_stage
+    self._run_sanity_check()
+  File "/dss/dsshome1/04/ra58seq2/miniforge3/envs/codebase/lib/python3.10/site-packages/lightning/pytorch/trainer/trainer.py", line 1083, in _run_sanity_check
+    val_loop.run()
+  File "/dss/dsshome1/04/ra58seq2/miniforge3/envs/codebase/lib/python3.10/site-packages/lightning/pytorch/loops/utilities.py", line 179, in _decorator
+    return loop_run(self, *args, **kwargs)
+  File "/dss/dsshome1/04/ra58seq2/miniforge3/envs/codebase/lib/python3.10/site-packages/lightning/pytorch/loops/evaluation_loop.py", line 145, in run
+    self._evaluation_step(batch, batch_idx, dataloader_idx, dataloader_iter)
+  File "/dss/dsshome1/04/ra58seq2/miniforge3/envs/codebase/lib/python3.10/site-packages/lightning/pytorch/loops/evaluation_loop.py", line 437, in _evaluation_step
+    output = call._call_strategy_hook(trainer, hook_name, *step_args)
+  File "/dss/dsshome1/04/ra58seq2/miniforge3/envs/codebase/lib/python3.10/site-packages/lightning/pytorch/trainer/call.py", line 328, in _call_strategy_hook
+    output = fn(*args, **kwargs)
+  File "/dss/dsshome1/04/ra58seq2/miniforge3/envs/codebase/lib/python3.10/site-packages/lightning/pytorch/strategies/strategy.py", line 412, in validation_step
+    return self.lightning_module.validation_step(*args, **kwargs)
+  File "/dss/dsshome1/04/ra58seq2/lmu2025-miccai-fomo25/src/models/supervised_base.py", line 192, in validation_step
+    assert input_channels == self.num_modalities, (
+AssertionError: Expected 4 input channels, but got 3. This often happens when the task config has changed _after_ data has been preprocessed. Check your data preprocessing.
+Sanity Checking: |          | 0/? [00:00<?, ?it/s]Sanity Checking:   0%|          | 0/2 [00:00<?, ?it/s]Sanity Checking DataLoader 0:   0%|          | 0/2 [00:00<?, ?it/s][1;34mwandb[0m: 
+[1;34mwandb[0m: 🚀 View run [33mfinetune_unet_xl_experiment_1_version_0[0m at: [34mhttps://wandb.ai/daniel-gloukhman-ludwig-maximilianuniversity-of-munich/fomo-finetuning/runs/gzmc5znx[0m
+srun: error: mcml-hgx-a100-015: task 0: Exited with exit code 1

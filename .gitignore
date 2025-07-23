@@ -55,10 +55,6 @@ docs/_build/
 .env
 .vscode
 
-slurm-*.out
-*.err
-*.out
-*.job
 
 wandb
 data/*
