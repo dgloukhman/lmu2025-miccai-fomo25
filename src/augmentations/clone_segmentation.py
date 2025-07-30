@@ -8,7 +8,6 @@ class CloneMinigioma(object):
         self.kwargs = kwargs
 
     def __call__(self, data_dict):
-        print(f"Applying CloneMinigioma with p_per_sample={self.p_per_sample}")
         if np.random.uniform() < self.p_per_sample:
             image = data_dict['image']
             label = data_dict.get('label', None)
