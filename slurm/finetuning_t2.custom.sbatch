@@ -27,5 +27,6 @@ srun python src/finetune.py \
     --epochs=500 \
     --train_batches_per_epoch=100 \
     --new_version \
-    --augmentation_preset=all 
+    --augmentation_preset=clone_all \
+    --experiment='finetuning with larger artificial dataset'
 
