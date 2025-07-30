@@ -1,12 +1,37 @@
 from typing import Literal
 
 
-def get_finetune_augmentation_params(preset: Literal["basic", "none", "yucca_default", "all"]) -> dict:
+def get_finetune_augmentation_params(preset: Literal["basic", "none", "yucca_default", "all", "clone_basic", "clone_all"]) -> dict:
     """ "
     Get an augmentation parameter dict from a preset name.
     """
     if preset == "basic":
         return {
+            # turned on
+            "rotation_p_per_sample": 0.2,
+            "rotation_p_per_axis": 0.66,
+            "scale_p_per_sample": 0.2,
+            "normalize": False,
+            # turned off
+            "additive_noise_p_per_sample": 0.0,
+            "biasfield_p_per_sample": 0.0,
+            "blurring_p_per_sample": 0.0,
+            "blurring_p_per_channel": 0.0,
+            "elastic_deform_p_per_sample": 0.0,
+            "gamma_p_per_sample": 0.0,
+            "gamma_p_invert_image": 0.0,
+            "gibbs_ringing_p_per_sample": 0.0,
+            "mirror_p_per_sample": 0.0,
+            "mirror_p_per_axis": 0.0,
+            "motion_ghosting_p_per_sample": 0.0,
+            "multiplicative_noise_p_per_sample": 0.0,
+            "simulate_lowres_p_per_sample": 0.0,
+            "simulate_lowres_p_per_channel": 0.0,
+            "simulate_lowres_p_per_axis": 0.0,
+        }
+    elif preset == "clone_basic":
+        return {
+            "clone_minigioma_p_per_sample": 1.0,
             # turned on
             "rotation_p_per_sample": 0.2,
             "rotation_p_per_axis": 0.66,
@@ -53,5 +78,10 @@ def get_finetune_augmentation_params(preset: Literal["basic", "none", "yucca_def
         }
     elif preset == "all":
         return {"normalize": False}  # Will use Yucca defaults
+    elif preset == "clone_all":
+        return {
+            "clone_minigioma_p_per_sample": 1.0,
+            "normalize": False,
+        }
     else:
         raise ValueError(f"Unknown augmentation preset: {preset}")

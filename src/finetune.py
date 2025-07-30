@@ -9,6 +9,7 @@ import wandb
 from lightning.pytorch.callbacks import ModelCheckpoint
 
 from models.supervised_base import BaseSupervisedModel
+from augmentations.clone_segmentation import CloneMinigioma
 from augmentations.finetune_augmentation_presets import (
     get_finetune_augmentation_params,
 )
@@ -89,7 +90,7 @@ def main():
     parser.add_argument(
         "--augmentation_preset",
         type=str,
-        choices=["all", "basic", "none"],
+        choices=["all", "basic", "none", "clone_basic", "clone_all"],
         default="basic",
     )
     # Training Parameters
@@ -253,6 +254,7 @@ def main():
 
     # Configure augmentations based on preset
     aug_params = get_finetune_augmentation_params(args.augmentation_preset)
+    print(aug_params)
     # we use the cls augmentatoin preset for regression
     tt_preset = "classification" if task_type == "regression" else task_type
     augmenter = YuccaAugmentationComposer(
@@ -262,6 +264,19 @@ def main():
         deep_supervision=False,
     )
 
+    if "clone_minigioma_p_per_sample" in aug_params and aug_params["clone_minigioma_p_per_sample"] > 0:
+        p = aug_params["clone_minigioma_p_per_sample"]
+        clone_transform = CloneMinigioma(p_per_sample=p)
+        augmenter.train_transforms.transforms.append(clone_transform)
+
+    print()
+    print()
+    print()
+    print(augmenter.train_transforms)
+
+    print()
+    print()
+    print()
     # Create the data module that handles loading and batching
     data_module = YuccaDataModule(
         train_dataset_class=(

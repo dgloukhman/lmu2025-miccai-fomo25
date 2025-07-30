@@ -17,6 +17,7 @@ from yucca.modules.data.augmentation.transforms.Noise import (
 from yucca.modules.data.augmentation.transforms.Ringing import GibbsRinging
 from yucca.modules.data.augmentation.transforms.SimulateLowres import SimulateLowres
 from yucca.modules.data.augmentation.transforms.Spatial import Spatial
+from augumentations.clone_segmentation import clone_minigioma
 
 
 def get_pretrain_augmentations(patch_size, preset):
@@ -52,10 +53,10 @@ def get_finetune_augmentations(patch_size, preset):
         return None
 
     elif preset == "spatial":
-        augmentations = [spatial_augmentation(patch_size)]
+        augmentations = [spatial_augmentation(patch_size), clone_minigioma ]
 
     elif preset == "all":
-        augmentations = [spatial_augmentation(patch_size)] + intensity_augmentations()
+        augmentations = [spatial_augmentation(patch_size), clone_minigioma] + intensity_augmentations()
 
     return transforms.Compose(
         [AddBatchDimension()] + augmentations + [RemoveBatchDimension()]
