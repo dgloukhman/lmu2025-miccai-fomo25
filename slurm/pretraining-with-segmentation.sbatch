@@ -16,9 +16,9 @@ echo ${date}
 source ~/.zshrc
 conda activate codebase
 
-srun python ~/baseline-codebase/src/pretrain.py \
+srun python src/pretrain.py \
     --save_dir=~/unet \
-    --pretrain_data_dir=/dss/mcmlscratch/04/ra58seq2/preprocessed/FOMO60k \
+    --pretrain_data_dir=/dss/mcmlscratch/04/ra58seq2/finetuning/data/preprocessed/Task002_FOMO2 \
     --model_name=unet_xl_lw_dec \
     --patch_size=96 \
     --batch_size=4 \
@@ -28,4 +28,5 @@ srun python ~/baseline-codebase/src/pretrain.py \
     --num_devices=4 \
     --augmentation_preset=all \
     --model_type=joint_mae_seg \
-    --seg_loss_weight=0.4 
+    --seg_loss_weight=0.4 \
+    --pretrained_encoder_path=/dss/dsshome1/04/ra58seq2/unet/models/FOMO60k/unet_xl_lw_dec/versions/version_0/epoch=99.ckpt

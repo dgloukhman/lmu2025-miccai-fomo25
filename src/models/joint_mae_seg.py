@@ -9,10 +9,34 @@ import utils.visualisation as viz
 
 
 class JointMAEAndSeg(SelfSupervisedModel):
-    def __init__(self, *args, seg_loss_weight: float = 1.0, **kwargs):
+    def __init__(self, *args, seg_loss_weight: float = 1.0, pretrained_encoder_path: str = None, **kwargs):
         super().__init__(*args, **kwargs)
         self.seg_loss_weight = seg_loss_weight
         self._seg_loss_fn = self.dice_loss
+
+        if pretrained_encoder_path:
+            self.load_encoder_weights(pretrained_encoder_path)
+
+    def load_encoder_weights(self, pretrained_encoder_path):
+        print(f"Loading encoder weights from: {pretrained_encoder_path}")
+        # The checkpoint is a lightning checkpoint, so we need to extract the state_dict.
+        checkpoint = torch.load(pretrained_encoder_path, map_location=self.device)
+        checkpoint_state_dict = checkpoint['state_dict']
+
+        # The state_dict keys are prefixed with "model.", and we want to load the encoder part.
+        # So we filter for keys starting with "model.encoder."
+        # The keys in the checkpoint are like `model.encoder.layer. ...`
+        # The keys in `self.model.encoder.state_dict()` are like `layer. ...`
+        encoder_weights = {
+            key.replace("model.encoder.", ""): value
+            for key, value in checkpoint_state_dict.items()
+            if key.startswith("model.encoder.")
+        }
+
+        # Now we load the weights into our model's encoder
+        self.model.encoder.load_state_dict(encoder_weights)
+
+        print("Successfully loaded pretrained encoder weights. Decoders are randomly initialized.")
 
     def dice_loss(self, y_hat, y):
         y_hat = torch.sigmoid(y_hat)

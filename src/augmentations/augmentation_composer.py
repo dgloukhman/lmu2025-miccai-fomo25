@@ -17,7 +17,7 @@ from yucca.modules.data.augmentation.transforms.Noise import (
 from yucca.modules.data.augmentation.transforms.Ringing import GibbsRinging
 from yucca.modules.data.augmentation.transforms.SimulateLowres import SimulateLowres
 from yucca.modules.data.augmentation.transforms.Spatial import Spatial
-from augumentations.clone_segmentation import clone_minigioma
+from augmentations.clone_segmentation import CloneMeningioma
 
 
 def get_pretrain_augmentations(patch_size, preset):

@@ -104,6 +104,13 @@ def main():
         "--experiment", type=str, default="base_experiment", help="name of experiment"
     )
 
+    parser.add_argument(
+        "--pretrained_encoder_path",
+        type=str,
+        default=None,
+        help="Path to a pretrained encoder checkpoint to load weights from.",
+    )
+
     args = parser.parse_args()
 
     assert args.patch_size % 8 == 0, args.patch_size
@@ -162,6 +169,7 @@ def main():
         "rec_loss_masked_only": args.loss_masked_tokens_only,
         "model_type": args.model_type,
         "seg_loss_weight": args.seg_loss_weight,
+        "pretrained_encoder_path": args.pretrained_encoder_path,
         # Training parameters
         "batch_size": args.batch_size,
         "epochs": args.epochs,
@@ -208,7 +216,7 @@ def main():
     train_transforms = get_pretrain_augmentations(
         config["patch_size"], args.augmentation_preset
     )
-    train_transforms.transforms.insert( CloneMeningioma())
+    train_transforms.transforms.insert(0, CloneMeningioma())
 
     val_transforms = get_val_augmentations()
 
@@ -260,6 +268,7 @@ def main():
             compile_mode=config["compile_mode"],
             rec_loss_masked_only=config["rec_loss_masked_only"],
             seg_loss_weight=config["seg_loss_weight"],
+            pretrained_encoder_path=config["pretrained_encoder_path"],
         )
     else:
         raise ValueError(f"Unknown model type: {config['model_type']}")
