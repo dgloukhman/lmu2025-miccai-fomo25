@@ -17,6 +17,7 @@ from augmentations.augmentation_composer import (
     get_pretrain_augmentations,
     get_val_augmentations,
 )
+from augmentations.clone_segmentation import CloneMeningioma
 from data.datamodule import PretrainDataModule
 from data.pretrain_split import get_pretrain_split_config
 from yucca.pipeline.configuration.configure_paths import detect_version
@@ -185,7 +186,6 @@ def main():
         "overfit_batches": args.overfit_batches,
         "check_val_every_n_epoch": args.check_val_every_n_epoch,
         "accumulate_grad_batches": args.accumulate_grad_batches,
-        "gradient_clip_val": 1.0
     }
 
     # Calculate training metrics based on the config
@@ -208,6 +208,8 @@ def main():
     train_transforms = get_pretrain_augmentations(
         config["patch_size"], args.augmentation_preset
     )
+    train_transforms.transforms.insert( CloneMeningioma())
+
     val_transforms = get_val_augmentations()
 
     data = PretrainDataModule(
