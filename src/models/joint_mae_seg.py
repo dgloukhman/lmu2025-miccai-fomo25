@@ -1,133 +1,139 @@
 import torch
 import torch.nn as nn
-from lightning import LightningModule
-from torch.optim.lr_scheduler import CosineAnnealingWarmRestarts
-from monai.losses import DiceCELoss
 
-from models.networks.unet import unet_b
-from utils.masking import generate_random_mask
-from torchmetrics import MeanMetric
+from augmentations.mask import random_mask
+from models.self_supervised import SelfSupervisedModel
+from models import networks
+from yucca.functional.utils.kwargs import filter_kwargs
+import utils.visualisation as viz
 
 
-class JointMaeSegModel(LightningModule):
-    def __init__(
-        self,
-        config: dict,
-        learning_rate: float = 1e-4,
-        warmup_epochs: int = 5,
-        epochs: int = 100,
-        steps_per_epoch: int = 1,
-        optimizer: str = "AdamW",
-        should_compile: bool = False,
-        compile_mode: str | None = None,
-        rec_loss_masked_only: bool = False,
-    ):
-        super().__init__()
-        self.save_hyperparameters()
-        self.config = config
-        self.model = unet_b(mode="joint_mae_seg", input_channels=1, output_channels=1)
+class JointMAEAndSeg(SelfSupervisedModel):
+    def __init__(self, *args, seg_loss_weight: float = 1.0, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.seg_loss_weight = seg_loss_weight
+        self._seg_loss_fn = self.dice_loss
 
-        if should_compile:
-            self.model = torch.compile(self.model, mode=compile_mode)
+    def dice_loss(self, y_hat, y):
+        y_hat = torch.sigmoid(y_hat)
+        # flatten
+        y_hat = y_hat.view(-1)
+        y = y.view(-1)
+        intersection = (y_hat * y).sum()
+        dice_score = (2.0 * intersection + 1e-6) / (y_hat.sum() + y.sum() + 1e-6)
+        return 1.0 - dice_score
 
-        self.mae_loss = nn.MSELoss()
-        self.seg_loss = DiceCELoss(to_onehot_y=True, softmax=True)
-        self.masking_generator = MaskingGenerator(
-            (
-                self.config["mask_patch_size"],
-                self.config["mask_patch_size"],
-                self.config["mask_patch_size"],
-            ),
-            self.config["mask_ratio"],
+    def load_model(self):
+        print(f"Loading Model: 3D {self.model_name} for joint MAE and Seg")
+        model_func = getattr(networks, self.model_name)
+
+        print("Found model: ", model_func)
+
+        conv_op = torch.nn.Conv3d
+        norm_op = torch.nn.InstanceNorm3d
+
+        model_kwargs = {
+            # Applies to all models
+            "input_channels": self.input_channels,
+            "num_classes": self.num_classes,
+            # Applies to most CNN-based architectures
+            "conv_op": conv_op,
+            # Applies to most CNN-based architectures (exceptions: UXNet)
+            "norm_op": norm_op,
+            # Pretrainnig
+            "mode": "joint_mae_seg",
+            "patch_size": self.patch_size,
+        }
+        model_kwargs = filter_kwargs(model_func, model_kwargs)
+        model = model_func(**model_kwargs)
+
+        self.model = (
+            torch.compile(model, mode=self.compile_mode)
+            if self.should_compile
+            else model
         )
-        self.lr = learning_rate
-        self.warmup_epochs = warmup_epochs
-        self.epochs = epochs
-        self.steps_per_epoch = steps_per_epoch
-        self.optimizer = optimizer
-        self.rec_loss_masked_only = rec_loss_masked_only
 
-        self.train_mae_loss = MeanMetric()
-        self.train_seg_loss = MeanMetric()
-        self.val_mae_loss = MeanMetric()
-        self.val_seg_loss = MeanMetric()
+    def _augment_and_forward(self, x):
+        with torch.no_grad():
+            x_masked, mask = random_mask(x, self.mask_ratio, self.mask_patch_size)
 
-    def forward(self, x):
-        return self.model(x)
+        y_hat_rec, y_hat_seg = self.model(x_masked)
+
+        assert y_hat_rec is not None
+        assert y_hat_seg is not None
+        assert y_hat_rec.shape == x.shape, (
+            f"Got shape: {y_hat_rec.shape}, expected: {x.shape}"
+        )
+
+        return y_hat_rec, y_hat_seg, mask
 
     def training_step(self, batch, batch_idx):
-        img, seg = batch["image"], batch["label"]
+        x, y_seg = batch["image"], batch["label"]
+        y_rec = x
 
-        # MAE part
-        mask = self.masking_generator()
-        mask = mask.to(self.device)
-        masked_img = img * (1 - mask)
-        
-        mae_rec, seg_pred = self.forward(masked_img)
+        y_hat_rec, y_hat_seg, mask = self._augment_and_forward(x)
 
-        if self.rec_loss_masked_only:
-            mae_loss = self.mae_loss(mae_rec * mask, img * mask)
-        else:
-            mae_loss = self.mae_loss(mae_rec, img)
+        rec_loss = self.rec_loss(
+            y_hat_rec, y_rec, mask=mask if self.rec_loss_masked_only else None
+        )
+        seg_loss = self._seg_loss_fn(y_hat_seg, y_seg)
 
-        # Segmentation part
-        # The model will be trained on the full image for segmentation
-        _, seg_pred_unmasked = self.forward(img)
-        seg_loss = self.seg_loss(seg_pred_unmasked, seg)
+        total_loss = (
+            1 - self.seg_loss_weight
+        ) * rec_loss + self.seg_loss_weight * seg_loss
 
-        total_loss = mae_loss + seg_loss
+        if (
+            batch_idx == 0
+            and not self.disable_image_logging
+            and not self.trainer.sanity_checking
+        ):
+            self._log_debug_images(
+                x,
+                y_rec,
+                y_hat_rec,
+                stage="train_recon",
+                file_paths=batch["file_path"],
+                idx=0,
+            )
+            self._log_debug_images(
+                x,
+                y_seg,
+                torch.sigmoid(y_hat_seg),
+                stage="train_seg",
+                file_paths=batch["file_path"],
+                idx=0,
+            )
 
-        self.train_mae_loss.update(mae_loss)
-        self.train_seg_loss.update(seg_loss)
-        self.log("train/mae_loss", self.train_mae_loss, on_step=True, on_epoch=True)
-        self.log("train/seg_loss", self.train_seg_loss, on_step=True, on_epoch=True)
-        self.log("train/total_loss", total_loss, on_step=True, on_epoch=True)
+        self.log_dict(
+            {
+                "train/loss": total_loss,
+                "train/rec_loss": rec_loss,
+                "train/seg_loss": seg_loss,
+            },
+            on_step=True,
+            on_epoch=False,
+            prog_bar=True,
+        )
 
         return total_loss
 
     def validation_step(self, batch, batch_idx):
-        img, seg = batch["image"], batch["label"]
+        x, y_seg = batch["image"], batch["label"]
+        y_rec = x
 
-        # MAE part
-        mask = self.masking_generator()
-        mask = mask.to(self.device)
-        masked_img = img * (1 - mask)
-        
-        mae_rec, seg_pred = self.forward(masked_img)
+        y_hat_rec, y_hat_seg, mask = self._augment_and_forward(x)
 
-        if self.rec_loss_masked_only:
-            mae_loss = self.mae_loss(mae_rec * mask, img * mask)
-        else:
-            mae_loss = self.mae_loss(mae_rec, img)
-
-        # Segmentation part
-        _, seg_pred_unmasked = self.forward(img)
-        seg_loss = self.seg_loss(seg_pred_unmasked, seg)
-
-        total_loss = mae_loss + seg_loss
-
-        self.val_mae_loss.update(mae_loss)
-        self.val_seg_loss.update(seg_loss)
-        self.log("val/mae_loss", self.val_mae_loss, on_step=True, on_epoch=True)
-        self.log("val/seg_loss", self.val_seg_loss, on_step=True, on_epoch=True)
-        self.log("val/total_loss", total_loss, on_step=True, on_epoch=True)
-
-    def configure_optimizers(self):
-        if self.optimizer == "AdamW":
-            optimizer = torch.optim.AdamW(
-                self.parameters(), lr=self.lr, weight_decay=1e-5
-            )
-        elif self.optimizer == "SGD":
-            optimizer = torch.optim.SGD(
-                self.parameters(), lr=self.lr, momentum=0.9, weight_decay=1e-5
-            )
-        else:
-            raise ValueError(f"Optimizer {self.optimizer} not supported")
-
-        scheduler = CosineAnnealingWarmRestarts(
-            optimizer,
-            T_0=self.warmup_epochs * self.steps_per_epoch,
-            T_mult=1,
-            eta_min=1e-6,
+        rec_loss = self.rec_loss(
+            y_hat_rec, y_rec, mask=mask if self.rec_loss_masked_only else None
         )
-        return [optimizer], [scheduler]
+        seg_loss = self._seg_loss_fn(y_hat_seg, y_seg)
+
+        total_loss = rec_loss + self.seg_loss_weight * seg_loss
+
+        self.log_dict(
+            {
+                "val/loss": total_loss,
+                "val/rec_loss": rec_loss,
+                "val/seg_loss": seg_loss,
+            }
+        )

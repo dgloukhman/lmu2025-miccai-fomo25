@@ -12,6 +12,7 @@ from batchgenerators.utilities.file_and_folder_operations import (
 )
 
 from models.self_supervised import SelfSupervisedModel
+from models.joint_mae_seg import JointMAEAndSeg
 from augmentations.augmentation_composer import (
     get_pretrain_augmentations,
     get_val_augmentations,
@@ -64,6 +65,19 @@ def main():
     parser.add_argument("--compile_mode", type=str, default=None)
     parser.add_argument("--new_version", action="store_true")
     parser.add_argument("--optimizer", type=str, default="AdamW")
+    parser.add_argument(
+        "--model_type",
+        type=str,
+        default="mae",
+        choices=["mae", "joint_mae_seg"],
+        help="Type of model to train",
+    )
+    parser.add_argument(
+        "--seg_loss_weight",
+        type=float,
+        default=0.4,
+        help="Weight for the segmentation loss in joint training.",
+    )
 
     parser.add_argument(
         "--augmentation_preset",
@@ -145,6 +159,8 @@ def main():
         "should_compile": args.compile,
         "compile_mode": args.compile_mode,
         "rec_loss_masked_only": args.loss_masked_tokens_only,
+        "model_type": args.model_type,
+        "seg_loss_weight": args.seg_loss_weight,
         # Training parameters
         "batch_size": args.batch_size,
         "epochs": args.epochs,
@@ -206,23 +222,45 @@ def main():
     )
 
     # Create model and trainer
-    model = SelfSupervisedModel(
-        model_name=config["model_name"],
-        config=config,
-        epochs=config["epochs"],
-        warmup_epochs=config["warmup_epochs"],
-        learning_rate=config["learning_rate"],
-        optimizer=config["optimizer"],
-        steps_per_epoch=config["steps_per_epoch"],
-        num_classes=config["num_classes"],
-        input_channels=config["input_channels"],
-        patch_size=config["patch_size"],
-        mask_patch_size=config["mask_patch_size"],
-        mask_ratio=config["mask_ratio"],
-        should_compile=config["should_compile"],
-        compile_mode=config["compile_mode"],
-        rec_loss_masked_only=config["rec_loss_masked_only"],
-    )
+    if config["model_type"] == "mae":
+        model = SelfSupervisedModel(
+            model_name=config["model_name"],
+            config=config,
+            epochs=config["epochs"],
+            warmup_epochs=config["warmup_epochs"],
+            learning_rate=config["learning_rate"],
+            optimizer=config["optimizer"],
+            steps_per_epoch=config["steps_per_epoch"],
+            num_classes=config["num_classes"],
+            input_channels=config["input_channels"],
+            patch_size=config["patch_size"],
+            mask_patch_size=config["mask_patch_size"],
+            mask_ratio=config["mask_ratio"],
+            should_compile=config["should_compile"],
+            compile_mode=config["compile_mode"],
+            rec_loss_masked_only=config["rec_loss_masked_only"],
+        )
+    elif config["model_type"] == "joint_mae_seg":
+        model = JointMAEAndSeg(
+            model_name=config["model_name"],
+            config=config,
+            epochs=config["epochs"],
+            warmup_epochs=config["warmup_epochs"],
+            learning_rate=config["learning_rate"],
+            optimizer=config["optimizer"],
+            steps_per_epoch=config["steps_per_epoch"],
+            num_classes=config["num_classes"],
+            input_channels=config["input_channels"],
+            patch_size=config["patch_size"],
+            mask_patch_size=config["mask_patch_size"],
+            mask_ratio=config["mask_ratio"],
+            should_compile=config["should_compile"],
+            compile_mode=config["compile_mode"],
+            rec_loss_masked_only=config["rec_loss_masked_only"],
+            seg_loss_weight=config["seg_loss_weight"],
+        )
+    else:
+        raise ValueError(f"Unknown model type: {config['model_type']}")
 
     # Initialize wandb logging
     wandb.init(
