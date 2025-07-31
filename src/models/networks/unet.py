@@ -15,7 +15,7 @@ class UNet(YuccaNet):
     def __init__(
         self,
         mode: Literal[
-            "mae", "classification", "segmentation", "regression", "enc"
+            "mae", "classification", "segmentation", "regression", "enc", "joint_mae_seg"
         ] = "segmentation",  # prediction mode
         input_channels: int = 1,
         output_channels: int = 1,
@@ -58,6 +58,20 @@ class UNet(YuccaNet):
                 basic_block=decoder_block,
                 starting_filters=starting_filters,
             )
+        elif mode == "joint_mae_seg":
+            self.seg_decoder = UNetDecoder(
+                output_channels=output_channels,
+                use_skip_connections=True,
+                deep_supervision=deep_supervision,
+                basic_block=decoder_block,
+                starting_filters=starting_filters,
+            )
+            self.mae_decoder = UNetDecoder(
+                output_channels=input_channels, # Reconstruct original image
+                use_skip_connections=False,
+                basic_block=MultiLayerConvDropoutNormNonlin.get_block_constructor(1),
+                starting_filters=starting_filters,
+            )
         elif mode in ["classification", "regression"]:
             self.decoder = ClsRegHead(
                 in_channels=starting_filters * 16, num_classes=output_channels
@@ -71,6 +85,8 @@ class UNet(YuccaNet):
 
     def forward(self, x):
         enc = self.encoder(x)
+        if self.mode == "joint_mae_seg":
+            return self.mae_decoder(enc), self.seg_decoder(enc)
         return self.decoder(enc)
 
 
@@ -424,7 +440,7 @@ def unet_xl(
     return UNet(
         input_channels=input_channels,
         output_channels=output_channels,
-        mode=mode,
+        mode="joint_mae_seg",
         use_skip_connections=True,
     )
 

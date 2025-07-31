@@ -2,7 +2,7 @@ import numpy as np
 import os
 
 
-class CloneMinigioma(object):
+class CloneMeningioma(object):
     def __init__(self, p_per_sample=1.0, **kwargs):
         self.p_per_sample = p_per_sample
         self.kwargs = kwargs
@@ -43,7 +43,7 @@ def get_bounding_box(arr):
     return (min_z, min_y, min_x, max_z, max_y, max_x)
 
 
-def load_random_minigioma_npy(directory):
+def load_random_meningioma_npy(directory):
     """
     Reads a directory of numpy files, selects one uniformly at random, and loads its contents.
     """
@@ -177,11 +177,11 @@ def clone_meningioma(
     trgt, patch_start_p=None, alpha=0.2, upper_threshold=0.9, lower_threshold=0.4
 ):
     """
-    Clones a random minigioma patch into the target array at a random or specified center.
+    Clones a random meningioma patch into the target array at a random or specified center.
     """
     t2_original_preproccessed = "/dss/dssmcmlfs01/pr74ze/pr74ze-dss-0001/ra58seq2/finetunig/data/preprocessed/Task002_FOMO2"
     trgt_brain_area = get_bounding_box(trgt[1])
-    src = load_random_minigioma_npy(t2_original_preproccessed)
+    src = load_random_meningioma_npy(t2_original_preproccessed)
     src = random_translation_and_shift(src)
     src = shrink_src(src, trgt_brain_area)
 
